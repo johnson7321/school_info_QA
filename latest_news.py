@@ -5,8 +5,7 @@ import sqlite3
 import os
 
 #定義資料庫位置
-# db_path = os.path.expanduser('~/cs.db')
-db_path = r"C:\Users\User\Desktop\crawl_cs\cs.db"
+db_path = os.path.join(os.getcwd(), "cs.db")
 conn = sqlite3.connect(db_path)
 c = conn.cursor()
 
