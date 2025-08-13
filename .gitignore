@@ -1,0 +1,12 @@
+# 忽略 SQLite 資料庫檔案
+*.db
+
+# 忽略 SQLite GUI專案設定檔
+*.sqbpro
+
+# Python快取資料夾
+__pycache__/
+
+# 其他暫存或環境設定檔案（可依需求增減）
+.env
+.vscode/
