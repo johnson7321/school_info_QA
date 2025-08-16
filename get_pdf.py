@@ -3,64 +3,34 @@ from bs4 import BeautifulSoup
 import pdfplumber
 from io import BytesIO
 
+def extract_text_from_pdf(pdf_links):
+    # 強制嘗試下載並解析 PDF，不以副檔名判斷
+    pdf_content = []
+    for full_link in pdf_links if isinstance(pdf_links, list) else [pdf_links]: 
+        try:
+            response = requests.get(full_link)
+            response.raise_for_status()
+        except Exception as e:
+            print(f"下載 PDF 失敗: {e}")
+            return None
 
+        pdf_file = BytesIO(response.content)
 
-# base_url = "https://cse.ttu.edu.tw"
-# latest_news_url = "https://cse.ttu.edu.tw/p/406-1058-38942,r61.php"
-
-# res = requests.get(latest_news_url)
-# res.raise_for_status()  # 確保請求成功
-# soup = BeautifulSoup(res.text, 'html.parser')
-
-# for data in soup.find_all(class_='minner'):
-#     a_tag = data.find('a')
-#     if not a_tag:
-#         continue
-    
-#     link = a_tag.get('href')
-#     full_link = link if link.startswith('http') else base_url + link
-
-#     if full_link.endswith('.pdf'):
-#         print(full_link)
-#         url = full_link
-#         response = requests.get(url)
-#         # 用 BytesIO 包裝成檔案物件
-#         pdf_file = BytesIO(response.content)
-
-#         with pdfplumber.open(pdf_file) as pdf:
-#             text = ""
-#             for page in pdf.pages:
-#                 text += page.extract_text() + "\n"
-        
-        # print(f"連結: {full_link}")
-        # print(f"pdf內文:{text}")
-        # print('\n')
-
-def extract_text_from_pdf(pdf_url):
-    base_url = "https://cse.ttu.edu.tw"
-    res = requests.get(pdf_url)
-    res.raise_for_status()  # 確保請求成功
-    soup = BeautifulSoup(res.text, 'html.parser')
-
-    for data in soup.find_all(class_='minner'):
-        a_tag = data.find('a')
-        if not a_tag:
-            continue
-        
-        link = a_tag.get('href')
-        full_link = link if link.startswith('http') else base_url + link
-
-        if full_link.endswith('.pdf'):
-            url = full_link
-            response = requests.get(url)
-            # 用 BytesIO 包裝成檔案物件
-            pdf_file = BytesIO(response.content)
-
+        try:
             with pdfplumber.open(pdf_file) as pdf:
                 text = ""
                 for page in pdf.pages:
-                    text += page.extract_text() + "\n"
-            
-            return(text)
+                    page_text = page.extract_text()
+                    if page_text:
+                        text += page_text 
+                pdf_content.append(text.strip())
+        except Exception as e:
+            print(f"解析 PDF 失敗: {e}")
+            return None
+    text = '\n'.join(pdf_content) if pdf_content else ''  # 空的 list 也會變成空字串
+    return text
 
-# print(extract_text_from_pdf("https://cse.ttu.edu.tw/p/406-1058-38575,r61.php"))
+# 測試用，請換成真正的 PDF 連結
+# test = ['https://cse.ttu.edu.tw/var/file/58/1058/attach/34/pta_35925_9531610_47618.pdf', 'https://cse.ttu.edu.tw/var/file/58/1058/attach/34/pta_35926_9910150_47618.pdf']
+# for content in extract_text_from_pdf(test):
+#     print(content)
